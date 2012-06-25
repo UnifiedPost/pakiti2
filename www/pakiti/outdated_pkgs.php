@@ -145,7 +145,7 @@ $starttime = $mtime;
 <div id="loading" style="position: absolute; width: 250px; height: 40px; left: 45%; top: 50%; font-weight: bold;
  font-size: 20pt; text-decoration: blink;">Loading ...</div>
 
-<? print_header(); ?>
+<?php print_header(); ?>
 
 <?php
 
@@ -196,18 +196,18 @@ $version_package = array();
 
 ?>
 <form action="/outdated_pkgs.php" method="get" name="cform">
-        <input type="hidden" name="t" id="t" value="<? echo $t; ?>">
-        <input type="hidden" name="o" id="o" value="<? echo $o; ?>">
-        <input type="hidden" name="d" id="d" value="<? echo $d; ?>">
+        <input type="hidden" name="t" id="t" value="<?php echo $t; ?>">
+        <input type="hidden" name="o" id="o" value="<?php echo $o; ?>">
+        <input type="hidden" name="d" id="d" value="<?php echo $d; ?>">
 
        <table width="100%">
                 <tr>
                         <td align="center">Order by:
-                                <span class="bu" onClick="document.getElementById('o').value='tag'; cform.submit();" <? if ($o == "tag") print "style=\"font-weight: bold;\""; ?>>tag</span>
-                                | <span class="bu" onClick="document.getElementById('o').value='host'; cform.submit();" <? if ($o == "host") print "style=\"font-weight: bold;\""; ?>>host</span>
-                                | <span class="bu" onClick="document.getElementById('o').value='time'; cform.submit();" <? if ($o == "time") print "style=\"font-weight: bold;\""; ?>>time</span>
-                                | <span class="bu" onClick="document.getElementById('o').value='kernel'; cform.submit();" <? if ($o == "kernel") print "style=\"font-weight: bold;\""; ?>>kernel</span>
-                                | <span class="bu" onClick="document.getElementById('o').value='os'; cform.submit();" <? if ($o == "os") print "style=\"font-weight: bold;\""; ?>>os</span>
+                                <span class="bu" onClick="document.getElementById('o').value='tag'; cform.submit();" <?php if ($o == "tag") print "style=\"font-weight: bold;\""; ?>>tag</span>
+                                | <span class="bu" onClick="document.getElementById('o').value='host'; cform.submit();" <?php if ($o == "host") print "style=\"font-weight: bold;\""; ?>>host</span>
+                                | <span class="bu" onClick="document.getElementById('o').value='time'; cform.submit();" <?php if ($o == "time") print "style=\"font-weight: bold;\""; ?>>time</span>
+                                | <span class="bu" onClick="document.getElementById('o').value='kernel'; cform.submit();" <?php if ($o == "kernel") print "style=\"font-weight: bold;\""; ?>>kernel</span>
+                                | <span class="bu" onClick="document.getElementById('o').value='os'; cform.submit();" <?php if ($o == "os") print "style=\"font-weight: bold;\""; ?>>os</span>
                         </td>
 </form>
 
@@ -231,7 +231,7 @@ $view="deployment";
 
                         <td>Tag:
                                 <select name="tag" onchange="cform.submit();">
-                                <option a="all" <? if ($a == "all") print " selected"; ?>>all</option>
+                                <option a="all" <?php if ($a == "all") print " selected"; ?>>all</option>
 <?php
    $pkgs = mysql_query("select distinct admin from host group by admin order by admin") ;
    while($row = mysql_fetch_row($pkgs)) {

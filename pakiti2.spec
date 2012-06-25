@@ -1,9 +1,9 @@
 Version: 2.1.4
 Name: pakiti
-Release: 1
+Release: 2
 
 License: BSD
-Source: http://pakiti.sourceforge.net/rpms/%{name}/%{name}-%{version}.tar.gz
+Source: http://pakiti.sourceforge.net/rpms/%{name}/%{name}-%{version}-%{release}.tar.gz
 Vendor: CESNET/CERN
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Packager: Michal Prochazka <michalp@ics.muni.cz>
@@ -43,7 +43,7 @@ central Pakiti server using openssl s_client or curl.
 
 %package server
 BuildArch: noarch
-Requires: webserver, mysql-server, php , php-mysql, php-xml
+Requires: webserver, php, php-mysql, php-xml
 Summary: Pakiti server - Patching status system.
 Group: Utilities/System
 
@@ -166,7 +166,7 @@ ln -s ../pakiti/pakiti.css www/link/pakiti.css
 #else
 #   /sbin/chkconfig pakiti2 reset
 #fi
-echo "See README file in /usr/share/doc/pakiti-client-2.1/"
+echo "See README file in /usr/share/doc/pakiti-client-%{version}/"
 
 #%preun client
 #if [ "$1" = 0 ]; then

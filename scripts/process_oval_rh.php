@@ -74,7 +74,7 @@ while ($row = mysql_fetch_row($res)) {
 			$el_tmp = $el_comment->getAttribute('comment');
 			if (strpos($el_tmp, "is installed")) {
 				# Get the release
-				preg_match("/^Red Hat Enterprise Linux.* (\d+) is installed$/", $el_tmp, $redhat_release);
+				preg_match("/^Red Hat Enterprise Linux.* (\d+).* is installed$/", $el_tmp, $redhat_release);
 			}
 		
 			# Get the info about versions

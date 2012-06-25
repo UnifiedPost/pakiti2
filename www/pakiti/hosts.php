@@ -169,7 +169,7 @@
 <!-- Loading element is shown while page is loading -->
 <div id="loading" style="position: absolute; width: 250px; height: 40px; left: 45%; top: 50%; font-weight: bold; font-size: 20pt; text-decoration: blink;">Loading ...</div>
 
-<? print_header(); ?>
+<?php print_header(); ?>
 
 <?php 
 	if ($d != "") {
@@ -194,9 +194,9 @@
 
 <!-- Page action bar -->
 <form action="./hosts.php" method="get" name="qform">
-	<input type="hidden" name="t" id="t" value="<? echo $t; ?>">
-	<input type="hidden" name="o" id="o" value="<? echo $o; ?>">
-	<input type="hidden" name="d" id="d" value="<? echo $d; ?>">
+	<input type="hidden" name="t" id="t" value="<?php echo $t; ?>">
+	<input type="hidden" name="o" id="o" value="<?php echo $o; ?>">
+	<input type="hidden" name="d" id="d" value="<?php echo $d; ?>">
 	<table width="100%">
 		<tr>
 			<td width="33%" align="left">
@@ -204,29 +204,29 @@
 				<tr>
 					<td>Show:</td>
 				 	<td width="110px" style="background: #FF0000;" class="bu">
-						<span onClick="document.getElementById('t').value='vulnerable'; qform.submit();" <? if ($t == "vulnerable") print "style=\"font-weight: bold;\""; ?>>vulnerable</span>
+						<span onClick="document.getElementById('t').value='vulnerable'; qform.submit();" <?php if ($t == "vulnerable") print "style=\"font-weight: bold;\""; ?>>vulnerable</span>
 					</td>
 				 	<td width="110px" style="background: #FFA000;" class="bu">
-						<span onClick="document.getElementById('t').value='unpatched'; qform.submit();" <? if ($t == "unpatched") print "style=\"font-weight: bold;\""; ?>>unpatched</span>
+						<span onClick="document.getElementById('t').value='unpatched'; qform.submit();" <?php if ($t == "unpatched") print "style=\"font-weight: bold;\""; ?>>unpatched</span>
 					</td>
 				 	<td width="110px" style="background: #CCFF66;" class="bu">
-						<span onClick="document.getElementById('t').value='all'; qform.submit();" <? if ($t == "all") print "style=\"font-weight: bold;\""; ?>>all</span>
+						<span onClick="document.getElementById('t').value='all'; qform.submit();" <?php if ($t == "all") print "style=\"font-weight: bold;\""; ?>>all</span>
 					</td>
 				 	<td width="130px" style="background: #EEEEEE;" class="bu">
-						<span onClick="document.getElementById('t').value='notreporting'; qform.submit();" <? if ($t == "notreporting") print "style=\"font-weight: bold;\""; ?>>not reporting</span>
+						<span onClick="document.getElementById('t').value='notreporting'; qform.submit();" <?php if ($t == "notreporting") print "style=\"font-weight: bold;\""; ?>>not reporting</span>
 					</td>
 				</tr>
 			</table>
 			<td width="33%" align="center">Order by:
-				<span class="bu" onClick="document.getElementById('o').value='tag'; qform.submit();" <? if ($o == "tag") print "style=\"font-weight: bold;\""; ?>>tag</span>
-				| <span class="bu" onClick="document.getElementById('o').value='host'; qform.submit();" <? if ($o == "host") print "style=\"font-weight: bold;\""; ?>>host</span>
-				| <span class="bu" onClick="document.getElementById('o').value='time'; qform.submit();" <? if ($o == "time") print "style=\"font-weight: bold;\""; ?>>time</span>
-				| <span class="bu" onClick="document.getElementById('o').value='kernel'; qform.submit();" <? if ($o == "kernel") print "style=\"font-weight: bold;\""; ?>>kernel</span>
-				| <span class="bu" onClick="document.getElementById('o').value='os'; qform.submit();" <? if ($o == "os") print "style=\"font-weight: bold;\""; ?>>os</span>
+				<span class="bu" onClick="document.getElementById('o').value='tag'; qform.submit();" <?php if ($o == "tag") print "style=\"font-weight: bold;\""; ?>>tag</span>
+				| <span class="bu" onClick="document.getElementById('o').value='host'; qform.submit();" <?php if ($o == "host") print "style=\"font-weight: bold;\""; ?>>host</span>
+				| <span class="bu" onClick="document.getElementById('o').value='time'; qform.submit();" <?php if ($o == "time") print "style=\"font-weight: bold;\""; ?>>time</span>
+				| <span class="bu" onClick="document.getElementById('o').value='kernel'; qform.submit();" <?php if ($o == "kernel") print "style=\"font-weight: bold;\""; ?>>kernel</span>
+				| <span class="bu" onClick="document.getElementById('o').value='os'; qform.submit();" <?php if ($o == "os") print "style=\"font-weight: bold;\""; ?>>os</span>
 			</td>
 			<td width=33%" align="right">Select tag:
 				<select name="a" onchange="qform.submit();">
-				<option a="all" <? if ($a == "all") print " selected"; ?>>all</option>
+				<option a="all" <?php if ($a == "all") print " selected"; ?>>all</option>
 <?php
 	# Print all admins
 	$sql = "SELECT DISTINCT admin FROM host";
@@ -337,6 +337,14 @@
 			WHERE act_version_id>0 AND host_id='$host_id' AND 
 			      installed_pkgs.act_version_id=act_version.id AND 
 			      act_version.is_sec=1";
+		# Select number of critical CVEs
+		$sql_crit_cve = "SELECT
+				count(DISTINCT cve.cve_name) 
+			FROM cve, installed_pkgs_cves, cves 
+			WHERE installed_pkgs_cves.host_id='$host_id' AND 
+				installed_pkgs_cves.cve_id=cve.cves_id AND 
+				cves.id=cve.cves_id AND 
+				cves.severity=\"Critical\"";
 		# Selecte number of all other needed updates
 		$sql_act_other = "SELECT
 					count(installed_pkgs.act_version_id) 
@@ -349,13 +357,18 @@
 		if (!$row_act = mysql_query($sql_act)) {
 			$num_up_sec_pkgs="N/A";
 		}
+		if (!$row_crit_cve = mysql_query($sql_crit_cve)) {
+			$num_crit_cve="N/A";
+		}
 		if (!$row_act_other = mysql_query($sql_act_other)) {
 			$num_up_all_pkgs="N/A";
 		} else {
 			# Fill out stats
 			$item_act = mysql_fetch_row($row_act);
+			$item_crit_cve = mysql_fetch_row($row_crit_cve);
 			$item_act_other = mysql_fetch_row($row_act_other);
-			$num_up_sec_pkgs=$item_act[0];
+//			$num_up_sec_pkgs=$item_act[0];
+			$num_up_sec_pkgs=$item_act[0]+$item_crit_cve[0];
 			$num_up_other_pkgs=$item_act_other[0];
 			if ($num_up_sec_pkgs > 0) {
 				$stats_avg_sec[$admin] += $num_up_sec_pkgs;
