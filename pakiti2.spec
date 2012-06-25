@@ -1,6 +1,6 @@
 Version: 2.1.4
 Name: pakiti
-Release: 1
+Release: 2
 
 License: BSD
 Source: http://pakiti.sourceforge.net/rpms/%{name}/%{name}-%{version}-%{release}.tar.gz
