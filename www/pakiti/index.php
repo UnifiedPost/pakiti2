@@ -97,7 +97,7 @@
 
 <?php print_header(); ?>
 
-<h3>Showing domains for <? echo $titlestring ?></h3>
+<h3>Showing domains for <?php echo $titlestring ?></h3>
 
 <!-- Display Output -->
 <table width="100%" border="0" class="tg">

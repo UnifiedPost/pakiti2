@@ -64,7 +64,7 @@
 
 	<div id="loading" style="position: absolute; width: 250px; height: 40px; left: 45%; top: 50%; font-weight: bold; font-size: 20pt; text-decoration: blink;">Loading ...</div>
 
-<? print  print_header();
+<?php print  print_header();
 
    if ($d != "") {
    	if ($enable_authz) {
