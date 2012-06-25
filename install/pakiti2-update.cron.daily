@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ -f /var/lock/pakiti2 ]; then
+	# Check for new packages every x hours (recommended is 24 hours) and update pakiti db
+	cd /var/lib/pakiti2/scripts
+	# Update packages versions from repositories
+	/usr/bin/php repository_updates.php
+	# Update OVAL for RedHat/SL
+	/usr/bin/php process_oval_rh.php
+fi
+exit 0

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Wait for random time (0-240s), so we do not overload the server
+RANDOM_NUMBER=`od -An -N2 -d /dev/random`
+WAIT_TIME=`echo $(( 1+( $RANDOM_NUMBER )%(240-1) ))`
+sleep $WAIT_TIME
+
+# Run the client
+/usr/sbin/pakiti2-client
+
+exit 0

@@ -1,0 +1,49 @@
+<VirtualHost *:443>
+
+	SSLEngine on
+	SSLCipherSuite ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP
+	
+	SSLCertificateKeyFile "/etc/grid-security/hostkey.pem"
+	SSLCertificateFile "/etc/grid-security/hostcert.pem" 
+	SSLCACertificatePath "/etc/grid-security/certificates/"
+
+	ServerName pakiti.server.com:443
+        ServerAdmin admin@admin.com	
+
+	DocumentRoot /var/lib/pakiti2/www/pakiti
+	ErrorLog /var/log/apache2/pakiti-error
+	CustomLog /var/log/apache2/pakiti-access common
+	CustomLog /var/log/apache2/ssl_request_pakiti_log ssl_combined
+	
+	Alias /feed "/var/lib/pakiti2/www/feed"
+	<Directory "/var/lib/pakiti2/www/feed">
+		SSLRequireSSL
+		Options +FollowSymLinks
+		AllowOverride None
+		Order allow,deny
+		Allow from all
+		DirectoryIndex index.php
+	</Directory>
+
+	Alias /link "/var/lib/pakiti2/www/link"
+	<Directory "/var/lib/pakiti2/www/link">
+		SSLRequireSSL
+		Options +FollowSymLinks
+		AllowOverride None
+		Order allow,deny
+		Allow from all
+		DirectoryIndex index.php
+	</Directory>
+
+	<Directory "/var/lib/pakiti2/www/pakiti">
+# Restrict access to this directory by your own auth mech
+		SSLRequireSSL
+		Options +FollowSymLinks
+		AllowOverride None
+		Order allow,deny
+		Allow from all
+		DirectoryIndex index.php
+	</Directory>
+
+</VirtualHost>
+

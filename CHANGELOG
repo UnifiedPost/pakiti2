@@ -1,0 +1,55 @@
+* Mon Nov 30 2009 Michal Prochazka <michalp@ics.muni.cz>
+- Initial Pakiti 2.1 release
+
+* Tue Jan 11 2010 Michal Prochazka <michalp@ics.muni.cz>
+- Pakiti 2.1-1 release
+- checking the arch for the packages from RPM repositories
+- fixed wrong unique key in act_version table
+- fixed parsing the responce from Debian and RH systems
+
+* Tue Jan 26 2010 Michal Prochazka <michalp@ics.muni.cz>
+- Pakiti 2.1-2 release
+- function process_rpm_pkgs is now split into two parts, the first one using
+  XLMReader and the second one using DOMXML. PHP4 doesn't have XMLReader
+
+* Fri Mar 19 2010 Michal Prochazka <michalp@ics.muni.cz>
+- Pakiti 2.1.1-2 release
+- bug fixes
+- added full support for the PHP4
+- added asynchronous mode
+- added anonymous links
+- added optional report - outdated packages (thanks to Catalin Dumitrescu)
+
+* Fri Mar 21 2010 Michal Prochazka <michalp@ics.muni.cz>
+- serious bug fix
+- statistics in all hosts views
+
+* Thu May 12 2010 Michal Prochazka <michalp@ics.muni.cz>
+- bug fixes
+- support for authZ
+- performance imporovements
+- add support for proxy clients
+
+* Fri Jun 11 2010 Michal Prochazka <michalp@ics.muni.cz>
+- Pakiti 2.1.3 release
+- bug fixes
+- little changes in the DB scheme
+- added support for interface selection in the pakiti2-client
+
+*Thu Sep 16 2010 Michal Prochazka <michalp@ics.muni.cz>
+- Pakiti 2.1.4 release
+- bug fixes
+- added support for proxy servers
+- RPM based repositories can be defined also by repomd.xml file
+- accepts repository definition files in bz2 compression
+- added force option to the repository_updates.php script
+- autorization accepts both REMOTE_USER and SSL_CLIENT_S_DN
+- performance optimizations
+- unused OSes can be deleted
+- Pakiti client
+    - automatic detection of transport mechanism
+    - errors are printed to the stderr
+    - OS detection only for Debian based systems other are detected on the server side
+    - added option that enables statisctics of the reports
+    - added command line option -c which specifies configuration file
+

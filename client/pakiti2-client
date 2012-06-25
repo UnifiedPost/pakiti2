@@ -1,0 +1,397 @@
+#!/bin/bash
+
+# Default values
+VERSION="4"
+CONF='/etc/pakiti2/pakiti2-client.conf'
+SERVERS="notspecified"
+SERVER_URL="/feed/"
+METHOD="autodetect"
+OPENSSL_BIN=`which openssl`
+CURL_BIN=`which curl`
+TAG="Pakiti client"
+CA_PATH="/etc/ssl/certs/"
+HOST_CERT=""
+REPORT=0
+SERVER_REPORT_STATS=0
+IS_PROXY=0
+INTERFACE=""
+
+usage=$0" [-v] [-h] [-d] [-c configuration file]\n\t-v: verbose output\n\t-h: this help\n\t-d: debug output\n\t-c file: configuration file (default: $CONF)"
+
+VERBOSE=0
+DEBUG=0
+ERROR=0
+TMPFILE=`mktemp`
+TMPERR=`mktemp`
+
+function quit {
+  EXIT=$1
+  # If there were any errors, print them out
+  if [ "X$2" != "X" ]; then
+    if [ $1 -eq 1 ]; then
+      echo "WARNING: $2" 1>&2
+    elif [ $1 -gt 1 ]; then
+      echo "ERROR: $2" 1>&2
+    fi
+  fi
+  if [ ${ERROR} -eq 1 ]; then
+    echo -n "ERROR(s): " 1>&2
+    cat ${TMPERR} 1>&2
+    if [ ${EXIT} -eq 0 ]; then
+      EXIT=1
+    fi
+  fi
+
+  rm -f ${TMPFILE}
+  rm -f ${TMPERR}
+  exit ${EXIT}
+}
+
+# Getting options
+while getopts "dvhc:" options; do
+  case $options in
+    c ) CONF=$OPTARG;;
+    v ) VERBOSE=1;;
+    d ) DEBUG=1
+	VERBOSE=1;;
+    h ) echo -e "$usage"
+	quit 1;;
+    * ) echo -e "$usage"
+	quit 1;;
+  esac
+done
+
+if [ "X${CONF}" = "X" -o ! -f "${CONF}" ]
+then
+	if [ ${VERBOSE} -eq 1 ]; 
+		then
+	  echo "Configuration file is missing at '${CONF}', using defaults!" 1>&2
+	fi
+else
+
+	# Getting parameters from the configuration file
+	L_SERVERS=`grep servers_name ${CONF} | grep -v \# | awk  -F "=" '{print $2}'`
+	L_SERVER_URL=`grep server_url ${CONF} | grep -v \# | awk  -F "=" '{print $2}' | tr -d " "`
+	L_OPENSSL_BIN=`grep openssl_path ${CONF} | grep -v \# | awk -F "=" '{print $2}'`
+	L_CURL_BIN=`grep curl_path ${CONF} | grep -v \# | awk -F "=" '{print $2}'`
+	L_CA_PATH=`grep ca_certificate ${CONF} | grep -v \# | awk -F "=" '{print $2}' | tr -d " "`
+	L_HOST_CERT=`grep host_cert ${CONF} | grep -v \# | awk -F "=" '{print $2}'`
+	L_TAG=`grep tag ${CONF} | grep -v \# | awk -F "=" '{print $2}' | tr -d " "`
+	L_METHOD=`grep connection_method ${CONF} | grep -v \# | awk -F "=" '{print $2}' | tr -d " "`
+	L_REPORT=`grep report ${CONF} | grep -v \# | awk -F "=" '{print $2}' | tr -d " "`
+	L_SERVER_REPORT_STATS=`grep server_rep_stats ${CONF} | grep -v \# | awk -F "=" '{print $2}' | tr -d " "`
+	L_IS_PROXY=`grep is_proxy ${CONF} | grep -v \# | awk -F "=" '{print $2}' | tr -d " "`
+	L_INTERFACE=`grep interface ${CONF} | grep -v \# | awk -F "=" '{print $2}' | tr -d " "`
+
+	if [ ! -z "${L_SERVERS}" ];
+		then
+		SERVERS=${L_SERVERS};
+	fi
+	if [ ! -z "${L_SERVER_URL}" ];
+		then
+		SERVER_URL=${L_SERVER_URL};
+	fi
+	if [ ! -z "${L_OPENSSL_BIN}" ];
+		then
+		OPENSSL_BIN=${L_OPENSSL_BIN};
+	fi
+	if [ ! -z "${L_CURL_BIN}" ];
+		then
+		CURL_BIN=${L_CURL_BIN};
+	fi	
+	if [ ! -z "${L_CA_PATH}" ];
+		then
+		CA_PATH=${L_CA_PATH};
+	fi
+	if [ ! -z "${L_HOST_CERT}" ];
+		then
+		HOST_CERT=${L_HOST_CERT};
+	fi
+	if [ ! -z "${L_TAG}" ];
+		then
+		TAG=${L_TAG};
+	fi
+	if [ ! -z "${L_METHOD}" ];
+		then
+		METHOD=${L_METHOD};
+	fi
+	if [ ! -z "${L_REPORT}" ];
+		then
+		REPORT=${L_REPORT};
+	fi
+	if [ ! -z "${L_SERVER_REPORT_STATS}" ];
+		then
+		SERVER_REPORT_STATS=${L_SERVER_REPORT_STATS};
+	fi
+	if [ ! -z "${L_IS_PROXY}" ];
+		then
+		IS_PROXY=${L_IS_PROXY};
+	fi
+	if [ ! -z "${L_INTERFACE}" ];
+		then
+		INTERFACE=${L_INTERFACE};
+	fi
+	if [ ${VERBOSE} -eq 1 ];
+        	then
+	        echo -e "Preparing the list of installed packages...";
+	fi
+fi
+
+# If method is autodetect, then detect which transport is available
+if [ "X${METHOD}" = "Xautodetect" ]; then
+  if [ -x "${CURL_BIN}" ]; then
+    METHOD="curl"
+  elif [ -x "${OPENSSL_BIN}" ]; then
+    METHOD="openssl"
+  else
+    quit 2 "No transport method available, install openssl or curl"
+  fi
+fi
+
+# If proxy mode is enabled, then method cannot be stdout
+if [ ${IS_PROXY} -eq 1 -a "X${METHOD}" = "Xstdout" ]; then
+  quit 2 "Proxy and stdout method cannot be used together"
+fi
+
+
+# If we are in proxy mode, read the data from stdin
+if [ ${IS_PROXY} -eq 1 ]; then
+  # Parse firs line which contains host,arch,os,...
+  LINEN=0
+  ARGSDONE=0
+  while read; do
+    let LINEN=${LINEN}+1
+
+    # OS, arch, tag, ... are on the first line
+    if [ ${LINEN} -eq 1 ]; then
+      ARGS=${REPLY}
+  
+      IFS=","
+      for i in ${ARGS}; do
+	VAR=`echo $i | sed -e 's/^\([a-zA-Z]*\)=.*$/\1/'`
+	VAL=`echo $i | sed -e 's/^[a-zA-Z]*="\(.*\)"$/\1/'`
+  
+	if [ "X${VAR}" = "Xversion" ]; then
+	  # Check if the client using the same version
+	  if [ "X${VAL}" != "X${VERSION}" ]; then
+	    quit 2 "Client is using version ${VAL}, but proxy is using ${VERSION}"
+	  fi
+	fi
+	if [ "X${VAR}" = "Xtype" ]; then
+	  TYPE=${VAL}
+	fi
+	if [ "X${VAR}" = "Xhost" ]; then
+	  REPHOST=${VAL}
+	fi
+	if [ "X${VAR}" = "Xtag" ]; then
+	  TAG=${VAL}
+	fi
+	if [ "X${VAR}" = "Xkernel" ]; then
+	  KERNEL=${VAL}
+	fi
+	if [ "X${VAR}" = "Xarch" ]; then
+	  ARCH=${VAL}
+	fi
+	if [ "X${VAR}" = "Xsite" ]; then
+	  SITE=${VAL}
+	fi
+	if [ "X${VAR}" = "Xos" ]; then
+	  OS=${VAL}
+	fi 
+      done
+      ARGSDONE=1
+    fi
+
+    # Second line is empty
+    # Get pkgs
+    if [ ${LINEN} -gt 1 -a ${ARGSDONE} -eq 1 ]; then
+      echo ${REPLY} >> ${TMPFILE}
+    fi
+  done
+else
+  # Getting system parameters
+  REPHOST=`hostname -f`
+  KERNEL=`uname -r`
+  ARCH=`uname -m`
+  PKGS=""
+  TYPE=""
+  SITE=""
+
+  # If site variable is set, then us it
+  if [ "X${SITE_NAME}" != "X" ]; then
+    SITE=${SITE_NAME}
+  fi
+
+  # Get list of packages by method which is available on the host
+  if [ ! -z "`which rpm`"  -a  -x "`which rpm`"  ]; then
+     rpm -qa --queryformat "'%{NAME}' '%{EPOCH}:%{VERSION}' '%{RELEASE}' '%{ARCH}'\n" 2>/dev/null | sed -e 's/(none)/0/g' > ${TMPFILE}
+     TYPE="rpm"
+  fi
+  if [ ! -s "${TMPFILE}" ]; then
+     if [ ! -z "`which dpkg-query`"  -a  -x "`which dpkg-query`"  ]; then
+        dpkg-query -W --showformat="\${Status}\|'\${Package}' '\${Version}' '' '\${Architecture}'\n" 2>/dev/null | grep '^install ok installed' | sed -e 's/^install ok installed|//' > ${TMPFILE}
+     fi
+     if [ -s "${TMPFILE}" ]; then
+  	TYPE="dpkg"
+     fi
+  fi
+fi
+
+# Detect OS (especially for Debian-like systems, RH based has package i.e. redhat-release which represents OS version)
+OS="unknown"
+for i in /etc/debian_version; do
+	if [ -f $i ]; then
+		case "${i}" in
+			/etc/debian_version)
+			OS="Debian `cat ${i}`"
+		 	;;
+	 	esac
+ 	fi
+ 	if [ "${OS}" != "unknown" ]; then
+	 	break
+ 	fi
+done 
+
+SERVERS_REPORTED_CORRECTLY=0
+# Iterate over all servers
+for SERVER in $SERVERS; do 
+	if [ "X${METHOD}" = "Xopenssl" ]; then
+		# Preparing openssl s_client string
+		OPENSSL="${OPENSSL_BIN} s_client";
+		
+		if [ "X${CA_PATH}" != "X" ]; 
+			then 
+			OPENSSL="${OPENSSL} -CApath \"${CA_PATH}\"";
+		fi
+		
+		if [ ${VERBOSE} -eq 1 ];
+		        then
+		        OPENSSL="${OPENSSL} -msg";
+			echo -e "Sending to the server...";
+		else
+			OPENSSL="${OPENSSL} -quiet";
+		fi
+		
+		if [ ${DEBUG} -eq 1 ];
+		        then
+		        OPENSSL="${OPENSSL} -debug";
+		else
+			OPENSSL="${OPENSSL} -quiet";
+		fi
+		if [ "X${HOST_CERT}" != "X" ];
+			then
+			OPENSSL="${OPENSSL} -cert \"${HOST_CERT}\"";
+		fi
+
+		# Replace + with %2b
+		sed -i -e 's/\+/%2b/g' ${TMPFILE}
+
+		# Add an empty line to the end of the packages file
+                echo -e "\n" >> ${TMPFILE}
+
+		# Kernel can obtain + char, so replace it with %2b
+		KERNEL=`uname -r | sed -e 's/\+/%2b/g'`
+
+		# Format of the SERVER variable is hostname:port
+		OPENSSL="${OPENSSL} -connect ${SERVER}";
+		
+		POST_DATA="type=${TYPE}&host=${REPHOST}&os=${OS}&arch=${ARCH}&tag=${TAG}&kernel=${KERNEL}&version=${VERSION}&report=${REPORT}&proxy=${IS_PROXY}&site=${SITE}&pkgs=";
+		POST_DATA_SIZE=`echo -n ${POST_DATA} | wc -m`;
+		FILE_SIZE=`cat ${TMPFILE} | wc -c`
+		let POST_DATA_SIZE=${POST_DATA_SIZE}+${FILE_SIZE}-1
+	
+		POST_HTTP_HEADER="POST ${SERVER_URL} HTTP/1.0\nContent-Type: application/x-www-form-urlencoded\nContent-Length: ${POST_DATA_SIZE}\n\n";
+		 
+		POST_DATA="${POST_HTTP_HEADER}${POST_DATA}";
+		
+		COMMAND="echo -e \"${POST_DATA}\" | cat - ${TMPFILE} | ${OPENSSL}";
+	
+	elif [ "X${METHOD}" = "Xcurl" ]; then
+		CURL=""
+	
+		# Preparing curl string
+		if [ "X${CA_PATH}" != "X" ];
+		        then
+		        CURL="${CURL} --connect-timeout 30 --capath \"${CA_PATH}\"";
+		fi
+		
+		# Set output interface
+                if [ "X${INTERFACE}" != "X" ];
+                        then
+                        CURL="${CURL} --interface ${INTERFACE}";
+                fi
+
+		if [ ${VERBOSE} -eq 1 ];
+		        then
+		        CURL="${CURL} -F verbose=\"1\"";
+		        echo -e "Sending to the server with curl...";
+		else	
+			# Be silent, but print error messages
+			CURL="${CURL} --silent --show-error";	
+		fi
+		
+		if [ ${DEBUG} -eq 1 ];
+		        then
+		        CURL="${CURL} -F debug=\"1\"";
+		fi
+
+		if [ "X${HOST_CERT}" != "X" ];
+			then
+			CURL="${CURL} --cert \"${HOST_CERT}\"";
+		fi
+		
+		CURL="${CURL} -F type=\"${TYPE}\"";
+		CURL="${CURL} -F host=\"${REPHOST}\"";
+		CURL="${CURL} -F os=\"${OS}\""; 
+		CURL="${CURL} -F tag=\"${TAG}\"";
+		CURL="${CURL} -F kernel=\"${KERNEL}\"";
+		CURL="${CURL} -F arch=\"${ARCH}\"";
+		CURL="${CURL} -F version=\"${VERSION}\"";
+		CURL="${CURL} -F report=\"${REPORT}\"";
+		CURL="${CURL} -F proxy=\"${IS_PROXY}\"";
+		CURL="${CURL} -F site=\"${SITE}\"";
+		CURL="${CURL} -F pkgs=\<${TMPFILE}";
+		COMMAND="${CURL_BIN}${CURL} https://${SERVER}${SERVER_URL}"
+	
+	elif [ "X${METHOD}" = "Xstdout" ]; then
+		echo -e "type=\"${TYPE}\",host=\"${REPHOST}\",os=\"${OS}\",tag=\"${TAG}\",kernel=\"${KERNEL}\",arch=\"${ARCH}\",site=\"${SITE}\",version=\"${VERSION}\",report=\"${REPORT}\"\n";
+
+		cat $TMPFILE | sed -e 's/%2b/\+/g';
+	fi
+	
+	# Run prepared command
+	RESULT=`eval "${COMMAND} 2>>${TMPERR}"`;
+
+	if [ $? -eq 0 ] ; then
+		SERVERS_REPORTED_CORRECTLY=`expr $SERVERS_REPORTED_CORRECTLY + 1`
+	else 
+		# Set ERROR if any occured
+		ERROR=1
+	fi
+
+	# Print out the results
+	if [ ${REPORT} -eq 1 ]; then
+		if [ ! -z "${RESULT}" ]; then
+			if [ "X${METHOD}" = "Xopenssl" ]; then
+				# Skip HTTP response header, it is separeted from the body by the new line
+				echo -e "${RESULT}" | grep -v $'[\x0d]'
+			else
+				echo -e "${RESULT}";
+			fi
+		fi
+	fi
+done
+
+# Print server reporting statistics
+if [ ${SERVER_REPORT_STATS} -eq 1 ]; then
+	SERVERS_COUNT=`echo $SERVERS |wc -w`
+	if [ ${SERVERS_COUNT} -eq  ${SERVERS_REPORTED_CORRECTLY} ]; then
+	  echo "OK: Pakiti reported correctly to $SERVERS_REPORTED_CORRECTLY server(s)"
+	elif [ ${SERVERS_REPORTED_CORRECTLY} -gt 0 ]; then
+	  quit 1 "Pakiti reported correctly only to $SERVERS_REPORTED_CORRECTLY/${SERVERS_COUNT} servers(s)"
+	else
+	  quit 2 "Pakiti failed to report to any server"
+	fi
+fi
+
+quit 0

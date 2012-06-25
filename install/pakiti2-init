@@ -1,0 +1,56 @@
+#!/bin/sh
+#
+# pakiti2       This shell script enables the automatic use of pakiti2.
+#               Based on the script from yumit.
+# Author:       Steve Traylen (s.traylen@rl.ac.uk).
+#
+# chkconfig:	345 50 01
+#
+# description:  Enable daily run of pakiti, 
+#
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+start() {
+	echo -n "Enabling pakiti2 update in cron: "
+	(/bin/touch /var/lock/pakiti2 && success) || failure
+	echo
+}
+
+stop() {
+	echo -n "Disabling pakiti2 cron job: "
+	(/bin/rm -f /var/lock/pakiti2 && success) || failure
+	echo
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop) 
+	stop
+	;;
+  restart)
+	stop
+	start
+	;;
+  condrestart)
+        if [ -f /var/lock/pakiti2 ]; then
+	    stop
+	    start
+	fi
+	;;
+  status)
+	if [ -f /var/lock/pakiti2 ]; then
+		echo "nightly pakiti2 update is enabled"
+	else
+		echo "nightly pakiti2 update is disabled"
+	fi
+	;;
+  *)
+	echo "*** Usage: pakiti2 {start|stop|restart|condrestart|status}"
+	exit 1
+esac
+
+exit 0

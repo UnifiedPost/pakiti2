@@ -1,0 +1,124 @@
+body { 
+	color: #000000; 
+	background: #ffffff; 
+	font: 10pt sans-serif 
+}
+table { 
+	font: 10pt sans-serif; 
+	border: 0px;
+}
+a:link { 
+	color: #3333cc; 
+	text-decoration: none
+}
+a:visited { 
+	color: #3333cc; 
+	text-decoration: none
+}
+a:active { 
+	color: #cc9966;
+	text-decoration: none
+}
+h1 { 
+	font: bold 20pt helvetica, sans-serif; 
+	color: #000000; 
+	margin: 0px
+}
+h2 {
+	background: #eeeeee;
+	color: #990000;
+	padding: 1mm; 
+	border-top: solid 2px #000099 
+}
+h3 { 
+	margin: 4px 0px 10px 0px;
+	font: normal 11pt sans-serif; 
+	background: #eeeeee; 
+	padding: 1mm; 
+	border-top: solid 1px #dddddd; 
+	color: #000000;
+}
+h4 { 
+	margin: 4px 0px 10px 0px;
+	font: normal 10pt sans-serif; 
+	background: #eeffee; 
+	padding: 1mm; 
+	border-top: solid 1px #dddddd; 
+	color: #000000;
+}
+h5 { 
+	margin: 4px 0px 0px 0px;
+	color: #000000; 
+	background: #EEEEEE; 
+	font: italic 10pt sans-serif
+}
+h6 { 
+	margin: 4px 0px 0px 0px;
+	font: italic 10pt sans-serif; 
+	background: #eeeeee; 
+	padding: 1mm; 
+	border-top: solid 1px #dddddd; 
+	color: #666666;
+}
+.ts, .ts td, .ts tr, .tg, .tg td, .tg tr { 
+	font: 10pt sans-serif
+}
+.ts td {
+	border-bottom: solid 1px #dddddd;
+}
+.bu {
+	cursor: pointer;
+	color: #330099;
+	text-align: center;
+}
+.bu2 {
+	background: #eeeeee;
+	padding: 4px 8px 4px 8px;
+	border: solid 1px #dddddd;
+}
+.bured {
+	cursor: pointer;
+	color: #CC0000;
+	text-align: center;
+}
+.s_pkgs { 
+	color: #CC0000; 
+	font-weight: bold;
+}
+.c_pkgs {
+	color: #99FF99;
+}
+.o_pkgs { 
+	color: #FF9933; 
+	font-weight: bold;
+}
+.bg1 { 
+	background: #eeefff;
+}
+.bg2 {
+	background: #ffffff;
+}
+.bg_red {
+	background: #FFCC99;
+}
+.navpanel {
+	background: #eeffee;
+	padding: 1mm; 
+	border-top: solid 2px #000099; 
+}
+.headertable {
+	width: 100%;
+	background: #eeffee;
+	margin-bottom: 20px;
+	border-bottom: solid 2px #000099;
+}
+.hostheader {
+	background: #eeffee;
+	font: normal 10pt sans-serif;
+}
+.maintitle {
+	font: bold 20pt sans-serif;
+}
+.submaintitle {
+	font: bold 12pt sans-serif;
+}

@@ -1,0 +1,30 @@
+Pakiti client can be run from non-privileged account. There are two options
+how to run Pakiti client.
+
+----------------------------------------------------------------------------
+Installation under non-privileged account:
+
+1. Copy /usr/share/doc/pakiti-client-2/pakiti2-client somewhere, e.g.
+/home/monitoring/.
+
+2. Edit file /home/monitoring/pakiti2-client and set default values.
+
+3. Add cron job which will run pakiti2-client once a day. Here is an example:
+
+echo "0 0 * * * /home/monitoring/pakiti2-client" > /tmp/cronjob
+crontab /tmp/cronjob
+
+----------------------------------------------------------------------------
+Installation under root account, where configuration is placed in
+/etc/pakiti2/pakiti2-client.conf:
+
+1. Copy /usr/share/doc/pakiti-client-2/pakiti2-client into the directory
+/usr/sbin/. If you install it somewhere else, you have to change the path in
+the pakiti2-client.update.cron.daily. 
+
+2. Copy /usr/share/doc/pakiti-client-2/pakiti2-client.update.cron.daily into
+/etc/cron.daily/.
+
+3. Copy /usr/share/doc/pakiti-client-2/pakiti2-client.conf into /etc/pakiti2/
+
+
