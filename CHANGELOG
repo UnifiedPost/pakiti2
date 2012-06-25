@@ -1,4 +1,9 @@
 * Mon Jun 25 2012 Jan Vansteenkiste <jan.vansteenkiste@unifiedpost.com>
+- Pakiti 2.1.4-3 release
+- Stripped out CVS I introduced.
+- Declare config.php as a config file so it does not get overwritten
+
+* Mon Jun 25 2012 Jan Vansteenkiste <jan.vansteenkiste@unifiedpost.com>
 - Pakiti 2.1.4-2 release
 - no more php short tags
 - include cve information in host listing
