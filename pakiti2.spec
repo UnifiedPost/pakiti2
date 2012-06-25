@@ -3,7 +3,7 @@ Name: pakiti
 Release: 1
 
 License: BSD
-Source: http://pakiti.sourceforge.net/rpms/%{name}/%{name}-%{version}.tar.gz
+Source: http://pakiti.sourceforge.net/rpms/%{name}/%{name}-%{version}-%{release}.tar.gz
 Vendor: CESNET/CERN
 BuildRoot: %{_tmppath}/%{name}-%{version}-buildroot
 Packager: Michal Prochazka <michalp@ics.muni.cz>
@@ -166,7 +166,7 @@ ln -s ../pakiti/pakiti.css www/link/pakiti.css
 #else
 #   /sbin/chkconfig pakiti2 reset
 #fi
-echo "See README file in /usr/share/doc/pakiti-client-2.1/"
+echo "See README file in /usr/share/doc/pakiti-client-%{version}/"
 
 #%preun client
 #if [ "$1" = 0 ]; then
