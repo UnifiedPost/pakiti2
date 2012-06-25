@@ -36,7 +36,7 @@
 - little changes in the DB scheme
 - added support for interface selection in the pakiti2-client
 
-*Thu Sep 16 2010 Michal Prochazka <michalp@ics.muni.cz>
+* Thu Sep 16 2010 Michal Prochazka <michalp@ics.muni.cz>
 - Pakiti 2.1.4 release
 - bug fixes
 - added support for proxy servers
