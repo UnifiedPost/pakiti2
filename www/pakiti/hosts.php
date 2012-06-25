@@ -337,6 +337,14 @@
 			WHERE act_version_id>0 AND host_id='$host_id' AND 
 			      installed_pkgs.act_version_id=act_version.id AND 
 			      act_version.is_sec=1";
+		# Select number of critical CVEs
+		$sql_crit_cve = "SELECT
+				count(DISTINCT cve.cve_name) 
+			FROM cve, installed_pkgs_cves, cves 
+			WHERE installed_pkgs_cves.host_id='$host_id' AND 
+				installed_pkgs_cves.cve_id=cve.cves_id AND 
+				cves.id=cve.cves_id AND 
+				cves.severity=\"Critical\"";
 		# Selecte number of all other needed updates
 		$sql_act_other = "SELECT
 					count(installed_pkgs.act_version_id) 
@@ -349,13 +357,18 @@
 		if (!$row_act = mysql_query($sql_act)) {
 			$num_up_sec_pkgs="N/A";
 		}
+		if (!$row_crit_cve = mysql_query($sql_crit_cve)) {
+			$num_crit_cve="N/A";
+		}
 		if (!$row_act_other = mysql_query($sql_act_other)) {
 			$num_up_all_pkgs="N/A";
 		} else {
 			# Fill out stats
 			$item_act = mysql_fetch_row($row_act);
+			$item_crit_cve = mysql_fetch_row($row_crit_cve);
 			$item_act_other = mysql_fetch_row($row_act_other);
-			$num_up_sec_pkgs=$item_act[0];
+//			$num_up_sec_pkgs=$item_act[0];
+			$num_up_sec_pkgs=$item_act[0]+$item_crit_cve[0];
 			$num_up_other_pkgs=$item_act_other[0];
 			if ($num_up_sec_pkgs > 0) {
 				$stats_avg_sec[$admin] += $num_up_sec_pkgs;
