@@ -139,6 +139,7 @@ ln -s ../pakiti/pakiti.css www/link/pakiti.css
 %attr(0664,root,root) %{_localstatedir}/lib/pakiti2/scripts/*
 
 %attr(0640,root,apache) %{_localstatedir}/lib/pakiti2/config/config.php
+%config(noreplace)      %{_localstatedir}/lib/pakiti2/config/config.php
 
 %attr(0664,root,root) %{_localstatedir}/lib/pakiti2/include/*.php
 
