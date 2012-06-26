@@ -1,3 +1,7 @@
+* Tue Jun 26 2012 Jan Vansteenkiste <jan.vansteenkiste@unifiedpost.com>
+- Pakiti 2.1.4-4 release
+- Fixed n/a bug in pakiti client
+
 * Mon Jun 25 2012 Jan Vansteenkiste <jan.vansteenkiste@unifiedpost.com>
 - Pakiti 2.1.4-3 release
 - Stripped out CVS I introduced.
