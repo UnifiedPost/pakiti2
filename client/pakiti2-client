@@ -238,7 +238,7 @@ else
 fi
 
 # Detect OS (especially for Debian-like systems, RH based has package i.e. redhat-release which represents OS version)
-OS="unknown"
+OS="n/a"
 for i in /etc/debian_version; do
 	if [ -f $i ]; then
 		case "${i}" in
@@ -247,10 +247,10 @@ for i in /etc/debian_version; do
 		 	;;
 	 	esac
  	fi
- 	if [ "${OS}" != "unknown" ]; then
-	 	break
- 	fi
-done 
+	if [ "${OS}" != "n/a" ]; then
+		break
+	fi
+done
 
 SERVERS_REPORTED_CORRECTLY=0
 # Iterate over all servers
