@@ -1,6 +1,6 @@
 Version: 2.1.4
 Name: pakiti
-Release: 3
+Release: 4
 
 License: BSD
 Source: http://pakiti.sourceforge.net/rpms/%{name}/%{name}-%{version}-%{release}.tar.gz
@@ -13,7 +13,7 @@ Url: http://pakiti.sourceforge.net
 
 %define _prefix /
 
-%description 
+%description
 Runs rpm -qa or dpkg -l on the hosts and sends results to the central server.
 
 Central server then process the results and checks whether the packages are
